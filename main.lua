@@ -26,11 +26,13 @@ localSpecialLetters[">"] = true
 localSpecialLetters["/"] = true
 localSpecialLetters["("] = true
 localSpecialLetters[")"] = true
+localSpecialLetters["\""] = true
+localSpecialLetters["\'"] = true
 
 local playerName, realm = UnitName("player");
 
 function frame:OnEvent(event, arg1, arg2)
-    if event == "ADDON_LOADED" and arg1 == "DaveChatFilter" then
+    if event == "ADDON_LOADED" and arg1 == "SodaChatFilter" then
       if ChatFilters == nil then
         ChatFilters = {}
       else
