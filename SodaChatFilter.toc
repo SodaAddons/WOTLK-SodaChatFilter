@@ -2,6 +2,5 @@
 ## Title: SodaChatFilter
 ## Author: Sodaro
 ## Version: 0.1
-## SavedVariables: SpecialLetters
 ## SavedVariablesPerCharacter: ChatFilters
 main.lua

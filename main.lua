@@ -13,26 +13,6 @@ end)
 C_ChatInfo.RegisterAddonMessagePrefix("SCF")
 
 filters = {}
-localSpecialLetters = {}
-localSpecialLetters[","] = true
-localSpecialLetters["."] = true
-localSpecialLetters["?"] = true
-localSpecialLetters["-"] = true
-localSpecialLetters[":"] = true
-localSpecialLetters[";"] = true
-localSpecialLetters["!"] = true
-localSpecialLetters["<"] = true
-localSpecialLetters[">"] = true
-localSpecialLetters["/"] = true
-localSpecialLetters["("] = true
-localSpecialLetters[")"] = true
-localSpecialLetters["\""] = true
-localSpecialLetters["#"] = true
-localSpecialLetters["["] = true
-localSpecialLetters["]"] = true
-localSpecialLetters["{"] = true
-localSpecialLetters["}"] = true
-
 
 local playerName, realm = UnitName("player");
 
@@ -49,16 +29,18 @@ function frame:OnEvent(event, arg1, arg2)
           print("SCF currently contains 0 filters. Type \"/SCF add\" followed by the word or sentence_containing_multiple_words")
         end
       end
-      if SpecialLetters == nil then
-
-      end
   end
   if event == "PLAYER_LOGOUT" then
     ChatFilters = filters
-    SpecialLetters = localSpecialLetters
   end
 end
 frame:SetScript("OnEvent", frame.OnEvent);
+
+function createSet (list)
+    local set = {}
+    for _, l in ipairs(list) do set[l] = true end
+    return set
+end
 
 function addToSet(set, key)
     set[key] = true
@@ -135,7 +117,7 @@ local function myChatFilter(self, event, msg, author, ...)
         if endPos ~= nil then --there is a match
             if endPos+1 <= #loweredmsg then --the text is not longer
                 local followingChar = string.sub(loweredmsg, endPos+1, endPos+1)
-                if string.match(followingChar, "%s") or setContains(localSpecialLetters, followingChar) then --following char is whitespace so it is fine
+                if string.match(followingChar, "[^a-zA-Z%d%s]") then --following char is whitespace or non-alphanumeric
                     return true
                 end
             else
