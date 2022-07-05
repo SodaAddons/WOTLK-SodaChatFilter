@@ -1,4 +1,4 @@
-## Interface: 20501
+## Interface: 20504
 ## Title: SodaChatFilter
 ## Author: Sodaro
 ## Version: 0.1

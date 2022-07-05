@@ -27,7 +27,12 @@ localSpecialLetters["/"] = true
 localSpecialLetters["("] = true
 localSpecialLetters[")"] = true
 localSpecialLetters["\""] = true
-localSpecialLetters["\'"] = true
+localSpecialLetters["#"] = true
+localSpecialLetters["["] = true
+localSpecialLetters["]"] = true
+localSpecialLetters["{"] = true
+localSpecialLetters["}"] = true
+
 
 local playerName, realm = UnitName("player");
 
@@ -145,29 +150,7 @@ end
 function removeIcons(msg)
   msg = msg:gsub("{%a+%d+}", "");
   msg = msg:gsub("{%a+}", "");
-  --msg = msg:gsub("{Star}", ""); msg = msg:gsub("{star}", "");
-  --msg = msg:gsub("{Circle}", ""); msg = msg:gsub("{Coin}", "");
-  --msg = msg:gsub("{circle}", ""); msg = msg:gsub("{coin}", "");
-  --msg = msg:gsub("{Diamond}", ""); msg = msg:gsub("{diamond}", "");
-  --msg = msg:gsub("{Triangle}", ""); msg = msg:gsub("{triangle}", "");
-  --msg = msg:gsub("{Moon}", ""); msg = msg:gsub("{moon}", "");
-  --msg = msg:gsub("{Square}", ""); msg = msg:gsub("{square}", "");
-  --msg = msg:gsub("{Cross}", ""); msg = msg:gsub("{cross}", "");
-  --msg = msg:gsub("{Skull}", ""); msg = msg:gsub("{skull}", "");
-  --msg = msg:gsub("{rt1}", "");
-  --msg = msg:gsub("{rt2}", "");
-  --msg = msg:gsub("{rt3}", "");
-  --msg = msg:gsub("{rt4}", "");
-  --msg = msg:gsub("{rt5}", "");
-  --msg = msg:gsub("{rt6}", "");
-  --msg = msg:gsub("{rt7}", "");
-  --msg = msg:gsub("{rt8}", "");
   return msg
 end
 
 ChatFrame_AddMessageEventFilter("CHAT_MSG_CHANNEL", myChatFilter)
---ChatFrame_AddMessageEventFilter("CHAT_MSG_WHISPER", myChatFilter)
---ChatFrame_AddMessageEventFilter("CHAT_MSG_SAY", myChatFilter)
---ChatFrame_AddMessageEventFilter("CHAT_MSG_PARTY", myChatFilter)
---ChatFrame_AddMessageEventFilter("CHAT_MSG_PARTY_LEADER", myChatFilter)
---ChatFrame_AddMessageEventFilter("CHAT_MSG_YELL", myChatFilter)
