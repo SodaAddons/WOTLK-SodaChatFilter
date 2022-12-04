@@ -154,4 +154,3 @@ local function MyChatFilter(self, event, msg, author, ...)
 end
 
 ChatFrame_AddMessageEventFilter("CHAT_MSG_CHANNEL", MyChatFilter)
---ChatFrame_AddMessageEventFilter("CHAT_MSG_GUILD", MyChatFilter)
