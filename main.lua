@@ -1,138 +1,157 @@
-local frame = CreateFrame("FRAME"); -- Need a frame to respond to events
-frame:RegisterEvent("ADDON_LOADED"); -- Fired when saved variables are loaded
-frame:RegisterEvent("PLAYER_LOGOUT"); -- Fired when about to log out´
-frame:RegisterEvent("PLAYER_ENTERING_WORLD");
+local set = {}
 
-local addonFrame = CreateFrame("FRAME")
-addonFrame:RegisterEvent("CHAT_MSG_ADDON")
-addonFrame:SetScript("OnEvent", function(self, event, prefix, msg, channel, sender)
-    if prefix == "SCF" then
-        print(string.format("[%s] [%s]: %s %s", channel, sender, prefix, msg))
-    end
-end)
-C_ChatInfo.RegisterAddonMessagePrefix("SCF")
+function set.Add(t, key)
+  t[key] = true
+end
 
-filters = {}
+function set.Remove(t, key)
+  t[key] = nil
+end
 
+function set.Contains(t, key)
+  return t[key] ~= nil
+end
+
+function set.GetSize(t)
+  local i = 0
+  for k, v in pairs(t) do
+    i = i + 1
+  end
+  return i
+end
+
+function set.Print(t)
+  for k, v in pairs(t) do
+    print(k)
+  end
+end
+
+local debugEnabled = false
+local lastLineID = nil
+local filters = {}
 local playerName, realm = UnitName("player");
 
+local frame = CreateFrame("FRAME"); -- Create a frame to respond to events
+frame:RegisterEvent("ADDON_LOADED"); -- Fires when saved variables are loaded
+frame:RegisterEvent("PLAYER_LOGOUT"); -- Fires when user is about to log out
+frame:RegisterEvent("PLAYER_ENTERING_WORLD"); --Fires when character is loaded in
+
 function frame:OnEvent(event, arg1, arg2)
-    if event == "ADDON_LOADED" and arg1 == "SodaChatFilter" then
-      if ChatFilters == nil then
-        ChatFilters = {}
+  if event == "ADDON_LOADED" and arg1 == "SodaChatFilter" then
+    if ChatFilters == nil then
+      ChatFilters = {}
+    else
+      filters = ChatFilters
+      local filterCount = set.GetSize(filters)
+      if filterCount > 0 then
+        print("SCF currently uses : " .. filterCount .. " filters. Type /SCF print to list them.")
       else
-        filters = ChatFilters
-        local filterCount = setGetSize(filters)
-        if filterCount > 0 then
-          print("SodaChatFilter (SCF) currently uses : "..filterCount.." filters. Type /SCF print to list them.")
-        else
-          print("SCF currently contains 0 filters. Type \"/SCF add\" followed by the word or sentence_containing_multiple_words")
-        end
+        print("SCF currently contains 0 filters. Type \"/SCF add\" followed by the word or sentence_containing_multiple_words")
       end
+    end
   end
   if event == "PLAYER_LOGOUT" then
     ChatFilters = filters
   end
 end
+
 frame:SetScript("OnEvent", frame.OnEvent);
 
-function createSet (list)
-    local set = {}
-    for _, l in ipairs(list) do set[l] = true end
-    return set
+local function PrintFilters()
+  print("SCF Print:")
+  set.Print(filters)
 end
 
-function addToSet(set, key)
-    set[key] = true
-end
-
-function removeFromSet(set, key)
-    set[key] = nil
-end
-
-function setContains(set, key)
-    return set[key] ~= nil
-end
-function setGetSize(set)
-    local i = 0
-    for filter,v in pairs(filters) do
-        i = i+1
-    end
-    return i
-end
-function PrintFilters()
-    print("SCF Print:")
-    for filter,v in pairs(filters) do
-        print(filter)
-    end
-end
-SLASH_SCF1 = "/SCF"
-local function MyCommands(msg, editbox)
-    local case, text = strsplit(" ", msg, 2)
-    --msg = msg:gsub()
-    if case == "add" then
-        for word in text:gmatch("%S+") do
-            if word:find("_") then
-              word = gsub(word, "_", " ")
-            end
-            if not setContains(filters, word) then
-                word = string.lower(word)
-                addToSet(filters, word)
-                print("SCF Added: "..word)
-            end
-        end
-    elseif case == "remove" then
-        for word in text:gmatch("%S+") do
-            if word:find("_") then
-              word = gsub(word, "_", " ")
-            end
-            if setContains(filters, word) then
-                word = string.lower(word)
-                removeFromSet(filters, word)
-                print("SCF Removed: "..word)
-            end
-        end
-    elseif case == "clear" then
-        for filter,v in pairs(filters) do
-            removeFromSet(filters, filter)
-        end
-        print("SCF Cleared")
-    elseif case == "print" then
-        PrintFilters()
-    else
-        success = C_ChatInfo.SendAddonMessage("SCF","Whisper test", "WHISPER", UnitName("player"))
-    end
-end
-SlashCmdList["SCF"] = MyCommands
-
-local function myChatFilter(self, event, msg, author, ...)
-    local authorName, realm = strsplit("-", author, 2)
-    msg = removeIcons(msg)
-    if authorName == playerName then
-      return false, msg, author, ... --do nothing
-    end
-    loweredmsg = string.lower(msg)
-    for filter,_ in pairs(filters) do
-        local startPos, endPos = string.find(loweredmsg, filter)
-        if endPos ~= nil then --there is a match
-            if endPos+1 <= #loweredmsg then --the text is not longer
-                local followingChar = string.sub(loweredmsg, endPos+1, endPos+1)
-                if string.match(followingChar, "[^a-zA-Z%d%s]") then --following char is whitespace or non-alphanumeric
-                    return true
-                end
-            else
-                return true
-            end
-        end
-    end
-    return false, msg, author, ... --do nothing
-end
-
-
-function removeIcons(msg)
+local function RemoveIcons(msg)
   msg = msg:gsub("{%a+%d+}", "");
   msg = msg:gsub("{%a+}", "");
   return msg
 end
 
-ChatFrame_AddMessageEventFilter("CHAT_MSG_CHANNEL", myChatFilter)
+local function PrintDebugMessage(msg)
+  print("|cFFFFFF00", "[SCF] message filtered:", msg, "|r")
+end
+
+SLASH_SCF1 = "/SCF"
+local function MyCommands(msg, editbox)
+  local case, text = strsplit(" ", msg, 2)
+  if case == "add" then
+    for word in text:gmatch("%S+") do
+      if word:find("_") then
+        word = gsub(word, "_", " ")
+      end
+      if not set.Contains(filters, word) then
+        word = string.lower(word)
+        set.Add(filters, word)
+        print("SCF Added: " .. word)
+      end
+    end
+  elseif case == "remove" then
+    for word in text:gmatch("%S+") do
+      if word:find("_") then
+        word = gsub(word, "_", " ")
+      end
+      if set.Contains(filters, word) then
+        word = string.lower(word)
+        set.Remove(filters, word)
+        print("SCF Removed: " .. word)
+      end
+    end
+  elseif case == "debug" then
+    debugEnabled = not debugEnabled
+    local val = debugEnabled and "ON" or "OFF"
+    print("SCF debugging toggled", val)
+  elseif case == "clear" then
+    for filter, v in pairs(filters) do
+      set.Remove(filters, filter)
+    end
+    print("SCF Cleared")
+  elseif case == "print" then
+    PrintFilters()
+  else
+    print("SCF: Unknown parameter. Valid parameters: add x, remove x, clear, debug")
+  end
+end
+
+SlashCmdList["SCF"] = MyCommands
+
+local function MyChatFilter(self, event, msg, author, ...)
+  local authorName, realm = strsplit("-", author, 2)
+  local _, channel, _, _, _, _, asdf, _, lineID, _ = ...
+
+  if authorName == playerName then
+    return false, msg, author, ... --do not filter player, return early
+  end
+
+  local shouldFilter = false
+  msg = RemoveIcons(msg)
+  loweredMsg = string.lower(msg)
+
+  for filter, _ in pairs(filters) do
+    local startPos, endPos = string.find(loweredMsg, filter)
+    if endPos ~= nil then --there is a match
+      if endPos + 1 > #loweredMsg then --the text is longer than full message
+        shouldFilter = true
+        break
+      end
+      local followingChar = string.sub(loweredMsg, endPos + 1, endPos + 1)
+      if string.match(followingChar, "[^a-zA-Z%d]") then --following char is whitespace or non-alphanumeric, filter the message
+        shouldFilter = true
+        break
+      end
+    end
+  end
+
+  if shouldFilter then
+    if debugEnabled and lineID ~= lastLineID then
+      PrintDebugMessage(msg)
+    end
+  end
+
+  lastLineID = lineID
+
+  return shouldFilter, msg, author, ... --if shouldfilter is true the message is filtered out
+end
+
+ChatFrame_AddMessageEventFilter("CHAT_MSG_CHANNEL", MyChatFilter)
+--ChatFrame_AddMessageEventFilter("CHAT_MSG_GUILD", MyChatFilter)
